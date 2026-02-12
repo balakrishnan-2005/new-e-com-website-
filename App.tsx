@@ -1,57 +1,79 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { HashRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route, useLocation, useSearchParams } from 'react-router-dom';
 import { CartProvider } from './context/CartContext';
-import { AuthProvider } from './context/AuthContext';
+import { WishlistProvider } from './context/WishlistContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import Navbar from './components/layout/Navbar';
 import Footer from './components/layout/Footer';
 import Hero from './components/home/Hero';
 import CategoryHighlights from './components/home/CategoryHighlights';
 import FeaturedProducts from './components/home/FeaturedProducts';
 import CartDrawer from './components/cart/CartDrawer';
+import WishlistDrawer from './components/wishlist/WishlistDrawer';
 import SweetAssistant from './components/ai/SweetAssistant';
-import { Star, ShieldCheck, Truck, UtensilsCrossed, Loader2 } from 'lucide-react';
+import AddProductModal from './components/products/AddProductModal';
+import ProductViewModal from './components/products/ProductViewModal';
+// Added missing AuthModal import
+import AuthModal from './components/auth/AuthModal';
+import { Star, ShieldCheck, Truck, UtensilsCrossed, Loader2, Plus, Sparkles, ChefHat } from 'lucide-react';
 import { getProducts, getCategories } from './services/dataService';
 import { Product, Category } from './types';
 
 // Scroll Management Component
 const ScrollToSection = () => {
-  const { pathname } = useLocation();
+  const { pathname, search } = useLocation();
+  const [searchParams] = useSearchParams();
 
   useEffect(() => {
-    const sectionId = pathname.substring(1) || 'home';
-    const element = document.getElementById(sectionId);
-    
-    if (element) {
-      const offset = 80; // Height of the sticky navbar
-      const bodyRect = document.body.getBoundingClientRect().top;
-      const elementRect = element.getBoundingClientRect().top;
-      const elementPosition = elementRect - bodyRect;
-      const offsetPosition = elementPosition - offset;
+    const scrollToTarget = () => {
+      const category = searchParams.get('category');
+      const targetSection = category ? 'shop' : (pathname.substring(1) || 'home');
+      
+      const element = document.getElementById(targetSection);
+      
+      if (element) {
+        const offset = 80; // Height of the sticky navbar
+        const bodyRect = document.body.getBoundingClientRect().top;
+        const elementRect = element.getBoundingClientRect().top;
+        const elementPosition = elementRect - bodyRect;
+        const offsetPosition = elementPosition - offset;
 
-      window.scrollTo({
-        top: pathname === '/' ? 0 : offsetPosition,
-        behavior: 'smooth'
-      });
-    } else if (pathname === '/') {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  }, [pathname]);
+        window.scrollTo({
+          top: (pathname === '/' && !category) ? 0 : offsetPosition,
+          behavior: 'smooth'
+        });
+      } else if (pathname === '/' && !category) {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    };
+
+    const timer = setTimeout(scrollToTarget, 100);
+    return () => clearTimeout(timer);
+  }, [pathname, search, searchParams]);
 
   return null;
 };
 
-const HomePage = ({ refreshTrigger }: { refreshTrigger: number }) => {
+const HomePage = ({ 
+  refreshTrigger, 
+  onQuickView, 
+  onAddClick 
+}: { 
+  refreshTrigger: number, 
+  onQuickView: (p: Product) => void,
+  onAddClick: () => void 
+}) => {
   const [products, setProducts] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchParams] = useSearchParams();
+  const selectedCategory = searchParams.get('category');
 
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
-      const [prodData, catData] = await Promise.all([getProducts(), getCategories()]);
+      const prodData = await getProducts();
       setProducts(prodData);
-      setCategories(catData);
       setLoading(false);
     };
     loadData();
@@ -65,7 +87,6 @@ const HomePage = ({ refreshTrigger }: { refreshTrigger: number }) => {
       
       <CategoryHighlights />
       
-      {/* Value Proposition / About Section */}
       <section id="about" className="py-16 lg:py-24 bg-white border-y border-gray-100">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12 lg:mb-16">
@@ -97,11 +118,41 @@ const HomePage = ({ refreshTrigger }: { refreshTrigger: number }) => {
         </div>
       ) : (
         <div id="shop">
-          <FeaturedProducts />
+          <FeaturedProducts 
+            products={products} 
+            filterCategory={selectedCategory} 
+            onQuickView={onQuickView}
+            onAddClick={onAddClick}
+          />
         </div>
       )}
 
-      {/* Instagram-style Gallery */}
+      {/* NEW: Partnership Section */}
+      <section className="py-16 lg:py-24 bg-gradient-to-br from-gray-900 to-gray-800 text-white overflow-hidden relative">
+        <div className="absolute top-0 left-0 w-full h-full overflow-hidden opacity-10">
+          <ChefHat className="absolute -top-10 -right-10 w-64 h-64 rotate-12" />
+          <Sparkles className="absolute -bottom-10 -left-10 w-48 h-48" />
+        </div>
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="max-w-4xl mx-auto flex flex-col items-center text-center">
+            <div className="w-16 h-16 bg-[#E91E63] rounded-3xl flex items-center justify-center mb-6 shadow-xl">
+              <ChefHat size={32} />
+            </div>
+            <h2 className="text-3xl lg:text-5xl font-heading font-bold mb-6">Are you a Home Baker or Sweet Maker?</h2>
+            <p className="text-gray-400 text-lg mb-10 max-w-2xl">
+              Join our exclusive community of artisans. List your homemade delicacies on SweetMoments and reach thousands of sweet lovers across the globe.
+            </p>
+            <button 
+              onClick={onAddClick}
+              className="px-10 py-4 bg-[#E91E63] text-white rounded-2xl font-bold hover:bg-[#C2185B] transition-all transform hover:scale-105 active:scale-95 shadow-2xl flex items-center space-x-3"
+            >
+              <Plus size={20} />
+              <span>Become an Artisan Partner</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
       <section className="py-16 lg:py-24 bg-[#F9FAFB]">
         <div className="container mx-auto px-4">
           <div className="text-center mb-10 lg:mb-12">
@@ -127,9 +178,36 @@ const HomePage = ({ refreshTrigger }: { refreshTrigger: number }) => {
   );
 };
 
+const OwnerActions = ({ onAddClick }: { onAddClick: () => void }) => {
+  const { user } = useAuth();
+  
+  // Always show a floating "plus" but it behaves like the navbar button
+  return (
+    <button
+      onClick={onAddClick}
+      className="fixed bottom-24 right-4 sm:bottom-28 sm:right-6 z-[100] w-12 h-12 sm:w-14 sm:h-14 bg-gray-900 text-white rounded-full flex items-center justify-center shadow-2xl hover:bg-black transition-all hover:scale-110 active:scale-95 group border-2 border-[#E91E63]/20"
+      title="Add New Product"
+    >
+      <Plus size={24} />
+      <span className="absolute right-full mr-4 px-3 py-1 bg-gray-900 text-white text-xs font-bold rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap hidden sm:block">
+        {user ? 'List New Sweet' : 'Login to List Sweet'}
+      </span>
+    </button>
+  );
+};
+
 const App: React.FC = () => {
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isWishlistOpen, setIsWishlistOpen] = useState(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  
+  // We use useAuth here too for global context
+  // Note: Since AuthProvider is a child, we can't call useAuth here directly.
+  // We'll handle modal logic inside the Router context or within HomePage/Navbar.
+  // However, for consistency, let's ensure the App child component handles the shared states.
 
   const handleProductAdded = useCallback(() => {
     setRefreshTrigger(prev => prev + 1);
@@ -138,30 +216,87 @@ const App: React.FC = () => {
   return (
     <Router>
       <AuthProvider>
-        <CartProvider>
-          <div className="flex flex-col min-h-screen">
-            <ScrollToSection />
-            <Navbar 
-              onOpenCart={() => setIsCartOpen(true)} 
-              onProductAdded={handleProductAdded}
+        <WishlistProvider>
+          <CartProvider>
+            <AppContent 
+              isCartOpen={isCartOpen}
+              setIsCartOpen={setIsCartOpen}
+              isWishlistOpen={isWishlistOpen}
+              setIsWishlistOpen={setIsWishlistOpen}
+              isAddModalOpen={isAddModalOpen}
+              setIsAddModalOpen={setIsAddModalOpen}
+              isAuthModalOpen={isAuthModalOpen}
+              setIsAuthModalOpen={setIsAuthModalOpen}
+              quickViewProduct={quickViewProduct}
+              setQuickViewProduct={setQuickViewProduct}
+              refreshTrigger={refreshTrigger}
+              handleProductAdded={handleProductAdded}
             />
-            <div className="flex-1">
-              <Routes>
-                <Route path="/" element={<HomePage refreshTrigger={refreshTrigger} />} />
-                <Route path="/shop" element={<HomePage refreshTrigger={refreshTrigger} />} />
-                <Route path="/about" element={<HomePage refreshTrigger={refreshTrigger} />} />
-                <Route path="/contact" element={<HomePage refreshTrigger={refreshTrigger} />} />
-              </Routes>
-            </div>
-            <div id="contact">
-              <Footer />
-            </div>
-            <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
-            <SweetAssistant />
-          </div>
-        </CartProvider>
+          </CartProvider>
+        </WishlistProvider>
       </AuthProvider>
     </Router>
+  );
+};
+
+// Helper component to consume useAuth context
+const AppContent = ({ 
+  isCartOpen, setIsCartOpen,
+  isWishlistOpen, setIsWishlistOpen,
+  isAddModalOpen, setIsAddModalOpen,
+  isAuthModalOpen, setIsAuthModalOpen,
+  quickViewProduct, setQuickViewProduct,
+  refreshTrigger, handleProductAdded
+}: any) => {
+  const { user } = useAuth();
+
+  const handleAddClick = () => {
+    if (user) {
+      setIsAddModalOpen(true);
+    } else {
+      setIsAuthModalOpen(true);
+    }
+  };
+
+  return (
+    <div className="flex flex-col min-h-screen">
+      <ScrollToSection />
+      <Navbar 
+        onOpenCart={() => setIsCartOpen(true)} 
+        onOpenWishlist={() => setIsWishlistOpen(true)}
+        onProductAdded={handleProductAdded}
+      />
+      <div className="flex-1">
+        <Routes>
+          <Route path="/" element={<HomePage refreshTrigger={refreshTrigger} onQuickView={setQuickViewProduct} onAddClick={handleAddClick} />} />
+          <Route path="/shop" element={<HomePage refreshTrigger={refreshTrigger} onQuickView={setQuickViewProduct} onAddClick={handleAddClick} />} />
+          <Route path="/about" element={<HomePage refreshTrigger={refreshTrigger} onQuickView={setQuickViewProduct} onAddClick={handleAddClick} />} />
+          <Route path="/contact" element={<HomePage refreshTrigger={refreshTrigger} onQuickView={setQuickViewProduct} onAddClick={handleAddClick} />} />
+        </Routes>
+      </div>
+      <div id="contact">
+        <Footer />
+      </div>
+      
+      <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
+      <WishlistDrawer isOpen={isWishlistOpen} onClose={() => setIsWishlistOpen(false)} />
+      <SweetAssistant />
+      <OwnerActions onAddClick={handleAddClick} />
+      
+      <AuthModal 
+        isOpen={isAuthModalOpen} 
+        onClose={() => setIsAuthModalOpen(false)} 
+      />
+      <AddProductModal 
+        isOpen={isAddModalOpen} 
+        onClose={() => setIsAddModalOpen(false)} 
+        onSuccess={handleProductAdded} 
+      />
+      <ProductViewModal 
+        product={quickViewProduct} 
+        onClose={() => setQuickViewProduct(null)} 
+      />
+    </div>
   );
 };
 

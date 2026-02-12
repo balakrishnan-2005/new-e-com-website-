@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { CATEGORIES } from '../../constants';
 import { ArrowRight } from 'lucide-react';
 
@@ -15,7 +16,11 @@ const CategoryHighlights: React.FC = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {CATEGORIES.map((cat) => (
-            <div key={cat.id} className="group relative h-80 rounded-[40px] overflow-hidden cursor-pointer shadow-lg hover:shadow-2xl hover:shadow-[#E91E63]/20 transition-all duration-500">
+            <Link 
+              to={`/shop?category=${cat.id}`} 
+              key={cat.id} 
+              className="group relative h-80 rounded-[40px] overflow-hidden cursor-pointer shadow-lg hover:shadow-2xl hover:shadow-[#E91E63]/20 transition-all duration-500 block"
+            >
               <img src={cat.image} alt={cat.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
               <div className="absolute bottom-0 left-0 right-0 p-8 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
@@ -25,7 +30,7 @@ const CategoryHighlights: React.FC = () => {
                   Shop Category <ArrowRight className="ml-2" size={16} />
                 </div>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       </div>

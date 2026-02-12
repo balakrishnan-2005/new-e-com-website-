@@ -2,7 +2,8 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { PRODUCTS } from "../constants";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+// Fixed: Initialize GoogleGenAI strictly following the guidelines (named parameter, direct env variable)
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 export const getSweetRecommendation = async (userPrompt: string) => {
   try {
@@ -11,7 +12,7 @@ export const getSweetRecommendation = async (userPrompt: string) => {
     ).join('\n');
 
     const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
+      model: 'gemini-3-flash-preview',
       contents: `You are a "Sweet Assistant" for SweetMoments, an artisanal sweet shop.
       Here are our products:
       ${productsContext}
