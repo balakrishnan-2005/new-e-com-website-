@@ -54,13 +54,13 @@
         animation: fade-in 0.5s ease-out forwards;
       }
     </style>
-    <!-- Shim for process.env (required for browser-native ESM when using SDKs like Gemini) -->
+    <!-- Non-destructive shim for process.env -->
     <script>
-      window.process = { 
-        env: { 
-          NODE_ENV: 'production'
-        } 
-      };
+      window.process = window.process || {};
+      window.process.env = window.process.env || {};
+      if (!window.process.env.NODE_ENV) {
+        window.process.env.NODE_ENV = 'production';
+      }
     </script>
     <script type="importmap">
     {
