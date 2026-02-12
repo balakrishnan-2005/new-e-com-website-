@@ -1,0 +1,7 @@
+{
+  "name": "SweetMoments - Artisanal Homemade Delicacies",
+  "description": "A premium e-commerce platform for artisanal homemade sweets, featuring AI-powered gift recommendations and a seamless shopping experience.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
