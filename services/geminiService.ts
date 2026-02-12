@@ -1,6 +1,6 @@
 
 import { GoogleGenAI, Type } from "@google/genai";
-import { PRODUCTS } from "../constants";
+import { PRODUCTS } from "../constants.ts";
 
 // Fixed: Initialize GoogleGenAI strictly following the guidelines (named parameter, direct env variable)
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });

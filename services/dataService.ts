@@ -1,7 +1,7 @@
 
-import { supabase } from '../lib/supabase';
-import { Product, Category } from '../types';
-import { PRODUCTS, CATEGORIES } from '../constants';
+import { supabase } from '../lib/supabase.ts';
+import { Product, Category } from '../types.ts';
+import { PRODUCTS, CATEGORIES } from '../constants.ts';
 
 // In-memory store for products added during the current session
 let localAddedProducts: Product[] = [];

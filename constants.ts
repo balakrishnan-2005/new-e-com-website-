@@ -1,5 +1,5 @@
 
-import { Product, Category } from './types';
+import { Product, Category } from './types.ts';
 
 export const CATEGORIES: Category[] = [
   { id: 'traditional', name: 'Traditional Sweets', image: 'https://picsum.photos/id/102/400/300', count: 12 },

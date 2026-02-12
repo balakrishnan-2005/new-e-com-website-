@@ -1,24 +1,23 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { HashRouter as Router, Routes, Route, useLocation, useSearchParams } from 'react-router-dom';
-import { CartProvider } from './context/CartContext';
-import { WishlistProvider } from './context/WishlistContext';
-import { AuthProvider, useAuth } from './context/AuthContext';
-import Navbar from './components/layout/Navbar';
-import Footer from './components/layout/Footer';
-import Hero from './components/home/Hero';
-import CategoryHighlights from './components/home/CategoryHighlights';
-import FeaturedProducts from './components/home/FeaturedProducts';
-import CartDrawer from './components/cart/CartDrawer';
-import WishlistDrawer from './components/wishlist/WishlistDrawer';
-import SweetAssistant from './components/ai/SweetAssistant';
-import AddProductModal from './components/products/AddProductModal';
-import ProductViewModal from './components/products/ProductViewModal';
-// Added missing AuthModal import
-import AuthModal from './components/auth/AuthModal';
+import { CartProvider } from './context/CartContext.tsx';
+import { WishlistProvider } from './context/WishlistContext.tsx';
+import { AuthProvider, useAuth } from './context/AuthContext.tsx';
+import Navbar from './components/layout/Navbar.tsx';
+import Footer from './components/layout/Footer.tsx';
+import Hero from './components/home/Hero.tsx';
+import CategoryHighlights from './components/home/CategoryHighlights.tsx';
+import FeaturedProducts from './components/home/FeaturedProducts.tsx';
+import CartDrawer from './components/cart/CartDrawer.tsx';
+import WishlistDrawer from './components/wishlist/WishlistDrawer.tsx';
+import SweetAssistant from './components/ai/SweetAssistant.tsx';
+import AddProductModal from './components/products/AddProductModal.tsx';
+import ProductViewModal from './components/products/ProductViewModal.tsx';
+import AuthModal from './components/auth/AuthModal.tsx';
 import { Star, ShieldCheck, Truck, UtensilsCrossed, Loader2, Plus, Sparkles, ChefHat } from 'lucide-react';
-import { getProducts, getCategories } from './services/dataService';
-import { Product, Category } from './types';
+import { getProducts, getCategories } from './services/dataService.ts';
+import { Product, Category } from './types.ts';
 
 // Scroll Management Component
 const ScrollToSection = () => {
@@ -127,7 +126,7 @@ const HomePage = ({
         </div>
       )}
 
-      {/* NEW: Partnership Section */}
+      {/* Partnership Section */}
       <section className="py-16 lg:py-24 bg-gradient-to-br from-gray-900 to-gray-800 text-white overflow-hidden relative">
         <div className="absolute top-0 left-0 w-full h-full overflow-hidden opacity-10">
           <ChefHat className="absolute -top-10 -right-10 w-64 h-64 rotate-12" />
@@ -181,7 +180,6 @@ const HomePage = ({
 const OwnerActions = ({ onAddClick }: { onAddClick: () => void }) => {
   const { user } = useAuth();
   
-  // Always show a floating "plus" but it behaves like the navbar button
   return (
     <button
       onClick={onAddClick}
@@ -204,11 +202,6 @@ const App: React.FC = () => {
   const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   
-  // We use useAuth here too for global context
-  // Note: Since AuthProvider is a child, we can't call useAuth here directly.
-  // We'll handle modal logic inside the Router context or within HomePage/Navbar.
-  // However, for consistency, let's ensure the App child component handles the shared states.
-
   const handleProductAdded = useCallback(() => {
     setRefreshTrigger(prev => prev + 1);
   }, []);
@@ -239,7 +232,6 @@ const App: React.FC = () => {
   );
 };
 
-// Helper component to consume useAuth context
 const AppContent = ({ 
   isCartOpen, setIsCartOpen,
   isWishlistOpen, setIsWishlistOpen,
